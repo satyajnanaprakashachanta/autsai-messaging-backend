@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Firebase Auth Test</title>
+</head>
+<body style="background-color: #444; color: #fff; font-family: sans-serif; padding: 2rem;">
+  <h1>🔐 Firebase Auth Test</h1>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyB-5IhUsVHeIbrxemHxg9BHOWsJU9_OO18",
+      authDomain: "autsai-messaging.firebaseapp.com",
+      projectId: "autsai-messaging",
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    const email = prompt("Enter Firebase test user email:");
+    const password = prompt("Enter password:");
+
+    signInWithEmailAndPassword(auth, email, password)
+      .then(userCredential => {
+        alert("✅ Logged in: " + userCredential.user.email);
+        return userCredential.user.getIdToken();
+      })
+      .then(token => {
+        console.log("ID Token:", token);
+
+        // Correct endpoint
+        return fetch('http://localhost:3000/api/auth/protected', {
+          method: 'GET',
+          headers: {
+            'Authorization': 'Bearer ' + token
+          }
+        });
+      })
+      .then(response => {
+        if (!response.ok) throw new Error("❌ Backend rejected token");
+        return response.json();
+      })
+      .then(data => {
+        document.body.innerHTML += `
+          <h2>🎉 Protected API Response</h2>
+          <pre>${JSON.stringify(data, null, 2)}</pre>
+        `;
+      })
+      .catch(error => {
+        alert("❌ Error: " + error.message);
+        console.error(error);
+      });
+  </script>
+</body>
+</html>
